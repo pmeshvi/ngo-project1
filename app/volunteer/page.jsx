@@ -11,7 +11,7 @@ export default function VolunteerPage() {
 
   const mockVolunteers = [
     { id: 1, name: 'Women Safty' },
-    { id: 2, name: 'Halping Hands' },
+    { id: 2, name: 'Helping Hands' },
     { id: 3, name: 'Blood Donations' },
     { id: 4, name: 'cloth Donations' },
   ];

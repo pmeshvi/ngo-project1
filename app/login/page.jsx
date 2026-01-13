@@ -1,75 +1,73 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
-  const router = useRouter();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    const isLoggedIn = cookies.find(c => c.startsWith('isLoggedIn='));
-    const roleCookie = cookies.find(c => c.startsWith('role='));
-    if (isLoggedIn) {
-      if (roleCookie?.split('=')[1] === 'volunteer') router.push('/volunteer');
-      else if (roleCookie?.split('=')[1] === 'admin') router.push('/admin');
-      else router.push('/dashboard');
-    }
-  }, [router]);
 
   const handleLogin = () => {
-    if (!username || !password) {
-      alert('Please enter username and password');
+    const user = JSON.parse(localStorage.getItem('registeredUser'));
+
+    if (!user) {
+      alert('No user found. Please register first.');
       return;
     }
-    // Set login cookie
-    document.cookie = 'isLoggedIn=true; path=/';
-    if (role) {
-      document.cookie = `role=${role}; path=/`;
-      if (role === 'volunteer') router.push('/volunteer');
-      else if (role === 'admin') router.push('/admin');
-    } else {
-      document.cookie = 'role=; path=/';
-      router.push('/dashboard'); // default dashboard if no role
+
+    if (username !== user.username || password !== user.password) {
+      alert('Invalid credentials');
+      return;
     }
+
+    document.cookie = 'isLoggedIn=true; path=/';
+    document.cookie = `role=${user.role}; path=/`;
+
+    if (user.role === 'admin') router.push('/admin');
+    else if (user.role === 'volunteer') router.push('/volunteer');
+    else router.push('/dashboard');
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-400 to-purple-500">
-      <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md text-center">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Login</h1>
+    <div className="min-h-screen flex justify-center items-center bg-gradient-to-r from-blue-500 to-indigo-600">
+      <div className="bg-white p-8 rounded-xl w-96 shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          Login
+        </h2>
+
         <input
-          type="text"
           placeholder="Username"
+          className="w-full border border-gray-300 p-2 mb-3 rounded text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={username}
           onChange={e => setUsername(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 placeholder-gray-700 mb-4"
         />
+
         <input
           type="password"
           placeholder="Password"
+          className="w-full border border-gray-300 p-2 mb-4 rounded text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 placeholder-gray-700 mb-4"
         />
-        <select
-          value={role}
-          onChange={e => setRole(e.target.value)}
-          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 mb-6"
-        >
-          <option value="">Select Role (Optional)</option>
-          <option value="volunteer">Volunteer</option>
-          <option value="admin">Admin</option>
-        </select>
+
         <button
           onClick={handleLogin}
-          className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-200"
+          className="bg-blue-600 hover:bg-blue-700 text-white w-full p-2 rounded transition"
         >
           Login
         </button>
+
+        {/* Register link for new users */}
+        <p className="text-center text-sm text-gray-600 mt-4">
+          New user?{' '}
+          <span
+            onClick={() => router.push('/register')}
+            className="text-blue-600 cursor-pointer hover:underline font-medium"
+          >
+            Register here
+          </span>
+        </p>
       </div>
     </div>
   );

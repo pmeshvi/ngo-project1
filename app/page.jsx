@@ -1,12 +1,19 @@
 'use client';
+
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/login');
+    const isRegistered = localStorage.getItem('isRegistered');
+
+    if (!isRegistered) {
+      router.push('/register');
+    } else {
+      router.push('/login');
+    }
   }, [router]);
 
   return null;
