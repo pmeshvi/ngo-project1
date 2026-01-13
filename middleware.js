@@ -1,33 +1,37 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(req) {
-  const url = req.nextUrl.clone();
+export function middleware(request) {
+  const { pathname } = request.nextUrl;
 
-  const isLoggedIn = req.cookies.get('isLoggedIn')?.value;
-  const role = req.cookies.get('role')?.value;
+  const isLoggedIn = request.cookies.get('isLoggedIn')?.value;
+  const role = request.cookies.get('role')?.value;
 
-  // If not logged in → redirect to login
-  if ((url.pathname.startsWith('/volunteer') || url.pathname.startsWith('/admin') || url.pathname.startsWith('/dashboard')) 
-      && isLoggedIn !== 'true') {
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+  // Public pages
+  if (
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname === '/'
+  ) {
+    return NextResponse.next();
   }
 
-  // Volunteer page → only volunteer role
-  if (url.pathname.startsWith('/volunteer') && role !== 'volunteer') {
-    url.pathname = '/not-authorized';
-    return NextResponse.redirect(url);
+  // Not logged in → redirect to login
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // Admin page → only admin role
-  if (url.pathname.startsWith('/admin') && role !== 'admin') {
-    url.pathname = '/not-authorized';
-    return NextResponse.redirect(url);
+  // Role-based protection
+  if (pathname.startsWith('/admin') && role !== 'admin') {
+    return NextResponse.redirect(new URL('/not-authorized', request.url));
+  }
+
+  if (pathname.startsWith('/volunteer') && role !== 'volunteer') {
+    return NextResponse.redirect(new URL('/not-authorized', request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/volunteer/:path*', '/admin/:path*', '/dashboard/:path*'],
+  matcher: ['/admin/:path*', '/volunteer/:path*', '/dashboard/:path*'],
 };
